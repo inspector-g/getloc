@@ -270,6 +270,11 @@ const char* __countryLabel		= "Country:    ";
 	[self __stop];
 }
 
+-(BOOL) timedOut
+{
+	return (self->__secs >= self->__timeout);
+}
+
 #pragma mark -
 #pragma mark Command line output
 
@@ -280,8 +285,15 @@ const char* __countryLabel		= "Country:    ";
 
 -(void) printCoordinatesWithLabels:(BOOL)labels_
 {
-	printf("%s%.6lf\n", (labels_ ? __latitudeLabel : ""), self->__lat);
-	printf("%s%.6lf\n", (labels_ ? __longitudeLabel : ""), self->__long);
+	if(labels_)
+	{
+		printf("%s%.6lf\n", __latitudeLabel, self->__lat);
+		printf("%s%.6lf\n", __longitudeLabel, self->__long);
+	}
+	else
+	{
+		printf("%.6lf,%.6lf\n", self->__lat, self->__long);
+	}
 }
 
 -(void) printCityWithLabel:(BOOL)label_

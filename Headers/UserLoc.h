@@ -54,6 +54,7 @@ typedef enum
 -(id) initWithSource:(UserLocSource)source_ verbose:(BOOL)verbose_ timeout:(NSUInteger)timeout_;
 -(void) dealloc;
 -(void) update:(id)sender_;
+-(BOOL) timedOut;
 
 -(void) printIPWithLabel:(BOOL)label_;
 -(void) printCityWithLabel:(BOOL)label_;

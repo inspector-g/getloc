@@ -7,25 +7,46 @@
 //
 
 #import <getopt.h>
+#import <libgen.h>
 
 #import "UserLoc.h"
+
+
+
+#define SUCCESS		0
+#define NO_LOCATION	1
+#define SHOWED_HELP	2
+#define INVALID_OPT	3
+#define PRINT_USAGE() printf("usage: %s [-%s] [-t <seconds>]\n", basename(argv[0]), optsNoArgs)
 
 
 
 int main(int argc, char* const argv[])
 {
 	// constants for supported command line arguments
-	static const char ipShort = 'a';		// 'a' for address
-	static const char coordsShort = 'p';	// 'p' for position (or point)
-	static const char cityShort = 'm';		// 'm' for municipality
-	static const char regionShort = 'r';	// 'r' for region
-	static const char countryShort = 'c';	// 'c' for country
-	static const char labelsShort = 'l';	// 'l' for labels
-	static const char verboseShort = 'v';	// 'v' for verbose
-	static const char timeoutShort = 't';	// 't' for timeout
+	static const char ipShort		= 'a';	// 'a' for address
+	static const char countryShort	= 'c';	// 'c' for country
+	static const char helpShort		= 'h';	// 'c' for country
+	static const char labelsShort	= 'l';	// 'l' for labels
+	static const char cityShort		= 'm';	// 'm' for municipality
+	static const char coordsShort	= 'p';	// 'p' for position (or point)
+	static const char regionShort	= 'r';	// 'r' for region
+	static const char timeoutShort	= 't';	// 't' for timeout
+	static const char verboseShort	= 'v';	// 'v' for verbose
+
+	static const char ipLong[]		= "ipaddress";
+	static const char countryLong[]	= "country";
+	static const char helpLong[]	= "help";
+	static const char labelsLong[]	= "labels";
+	static const char cityLong[]	= "city";
+	static const char coordsLong[]	= "coordinates";
+	static const char regionLong[]	= "region";
+	static const char timeoutLong[]	= "timeout";
+	static const char verboseLong[]	= "verbose";
 	
 	// string of valid argument chars for getopt functions
-	const char validArgs[] = { ipShort, coordsShort, cityShort, regionShort, countryShort, labelsShort, verboseShort, timeoutShort, ':', '\0' };
+	const char validOpts[] = { ipShort, countryShort, helpShort, labelsShort, cityShort, coordsShort, regionShort, timeoutShort, ':', verboseShort, '\0' };
+	const char optsNoArgs[] = { ipShort, countryShort, helpShort, labelsShort, cityShort, coordsShort, regionShort, verboseShort, '\0' };
 
 	// flags for command line args
 	BOOL showAll = YES;
@@ -37,19 +58,20 @@ int main(int argc, char* const argv[])
 	// arguments structs for getopt_long()
 	struct option longOpts[] = 
 	{
-		{"ipaddress",	no_argument, NULL, ipShort},
-		{"coordinates",	no_argument, NULL, coordsShort},
-		{"city",		no_argument, NULL, cityShort},
-		{"region",		no_argument, NULL, regionShort},
-		{"country",		no_argument, NULL, countryShort},
-		{"labels",		no_argument, NULL, labelsShort},
-		{"verbose",		no_argument, NULL, verboseShort},
-		{"timeout",		required_argument, NULL, timeoutShort}
+		{ipLong,		no_argument,		NULL, ipShort},
+		{countryLong,	no_argument,		NULL, countryShort},
+		{helpLong,		no_argument,		NULL, helpShort},
+		{labelsLong,	no_argument,		NULL, labelsShort},
+		{cityLong,		no_argument,		NULL, cityShort},
+		{coordsLong,	no_argument,		NULL, coordsShort},
+		{regionLong,	no_argument,		NULL, regionShort},
+		{timeoutLong,	required_argument,	NULL, timeoutShort},
+		{verboseLong,	no_argument,		NULL, verboseShort}
 	};
 
 	// loop through all command line args
 	int ch = 0;
-	while( (ch = getopt_long(argc, argv, validArgs, longOpts, NULL)) != -1 )
+	while( (ch = getopt_long(argc, argv, validOpts, longOpts, NULL)) != -1 )
 	{
 		switch(ch)
 		{
@@ -58,9 +80,31 @@ int main(int argc, char* const argv[])
 				showIP = YES;
 				break;
 
-			case coordsShort:
+			case countryShort:
 				showAll = NO;
-				showCoords = YES;
+				showCountry = YES;
+				break;
+
+			case helpShort:
+				PRINT_USAGE();
+				printf("\n");
+				printf("Without any options, %s prints the user's external IP address, latitude,\n", basename(argv[0]));
+				printf("longitude, city, region, and country, with preceding labels.\n\n");
+				printf("%s recognizes the following options:\n", basename(argv[0]));
+				printf("    -%c or --%-12s Prints the user's external IP address.\n", ipShort, ipLong);
+				printf("    -%c or --%-12s Prints the user's country.\n", countryShort, countryLong);
+				printf("    -%c or --%-12s Prints this help screen.\n", helpShort, helpLong);
+				printf("    -%c or --%-12s Output labels (ignored if no other options given).\n", labelsShort, labelsLong);
+				printf("    -%c or --%-12s Prints the user's city.\n", cityShort, cityLong);
+				printf("    -%c or --%-12s Prints the user's latitude and longitude.\n", coordsShort, coordsLong);
+				printf("    -%c or --%-12s Prints the user's region (i.e. state, province, etc.).\n", regionShort, regionLong);
+				printf("    -%c or --%-12s Specifies timeout in seconds. Integer argument required.\n", timeoutShort, timeoutLong);
+				printf("    -%c or --%-12s Utilize verbose output.\n", verboseShort, verboseLong);
+				return SHOWED_HELP;
+
+			case labelsShort:
+				showAll = NO;
+				showLabels = YES;
 				break;
 
 			case cityShort:
@@ -68,32 +112,27 @@ int main(int argc, char* const argv[])
 				showCity = YES;
 				break;
 
+			case coordsShort:
+				showAll = NO;
+				showCoords = YES;
+				break;
+
 			case regionShort:
 				showAll = NO;
 				showRegion = YES;
 				break;
 
-			case countryShort:
-				showAll = NO;
-				showCountry = YES;
-				break;
-
-			case labelsShort:
-				showAll = NO;
-				showLabels = YES;
+			case timeoutShort:
+				timeout = atoi(optarg);
 				break;
 
 			case verboseShort:
 				verbose = YES;
 				break;
-
-			case timeoutShort:
-				timeout = atoi(optarg);
-				break;
 			
 			default:
-				// TODO show proper arg usage and bail
-				break;
+				PRINT_USAGE();
+				return INVALID_OPT;
 		}
 	}
 
@@ -160,5 +199,5 @@ int main(int argc, char* const argv[])
 	[pool release];
 
 	// bail with a simple return value (0 for located, 1 for not)
-	return !ul.located;
+	return (ul.located ? SUCCESS : NO_LOCATION);
 }
