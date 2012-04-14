@@ -9,7 +9,7 @@ read response
 if [ "$response" == "yes" ]; then
 	sudo rm /usr/local/bin/getloc
 	sudo rm /usr/local/share/man/man1/getloc.1
-	sudo pkgutil --forget com.inspectorg.getloc.getloc.pkg
+	sudo pkgutil --forget com.inspectorg.getloc.pkg
 	echo "Uninstalled!"
 else
 	echo "Aborted."
